@@ -21,6 +21,20 @@ class TurnCycle {
       enemy,
     });
 
+    // Stop here if we are replacing this Pizza
+    if (submission.replacement) {
+      await this.onNewEvent({
+        type: "replace",
+        replacement: submission.replacement,
+      });
+      await this.onNewEvent({
+        type: "textMessage",
+        text: `Go get 'em, ${submission.replacement.name}`,
+      });
+      this.nextTurn();
+      return;
+    }
+
     if (submission.instanceId) {
       this.battle.items = this.battle.items.filter(
         (i) => i.instanceId !== submission.instanceId
@@ -38,6 +52,42 @@ class TurnCycle {
         target: submission.target,
       };
       await this.onNewEvent(event);
+    }
+
+    // Did the target die?
+    const targetDead = submission.target.hp <= 0;
+    if (targetDead) {
+      await this.onNewEvent({
+        type: "textMessage",
+        text: `${submission.target.name} is ruined!`,
+      });
+    }
+
+    // Do we have a winning team?
+    const winner = this.getWinningTeam();
+    if (winner) {
+      // END THE BATTLE -> TODO
+      await this.onNewEvent({
+        type: "textMessage",
+        text: "Winner!",
+      });
+      return;
+    }
+
+    // We have a dead target, but still no winner, so bring in a replacement
+    if (targetDead) {
+      const replacement = await this.onNewEvent({
+        type: "replacementMenu",
+        team: submission.target.team,
+      });
+      await this.onNewEvent({
+        type: "replace",
+        replacement,
+      });
+      await this.onNewEvent({
+        type: "textMessage",
+        text: `${replacement.name} appears`,
+      });
     }
 
     // Check for post events
@@ -60,8 +110,24 @@ class TurnCycle {
       await this.onNewEvent(expiredEvent);
     }
 
+    this.nextTurn();
+  }
+
+  nextTurn() {
     this.currentTeam = this.currentTeam === "player" ? "enemy" : "player";
     this.turn();
+  }
+
+  getWinningTeam() {
+    let aliveTeams = {};
+    Object.values(this.battle.combatants).forEach((c) => {
+      if (c.hp > 0) {
+        aliveTeams[c.team] = true;
+      }
+    });
+    if (!aliveTeams["player"]) return "enemy";
+    if (!aliveTeams["enemy"]) return "player";
+    return null;
   }
 
   async init() {
