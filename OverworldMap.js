@@ -108,6 +108,7 @@ class OverworldMap {
 
 window.OverworldMaps = {
   DemoRoom: {
+    id: "DemoRoom",
     lowerSrc: "/images/maps/DemoLower.png",
     upperSrc: "/images/maps/DemoUpper.png",
     gameObjects: {
@@ -206,12 +207,21 @@ window.OverworldMaps = {
       ],
       [utils.asGridCoord(5, 10)]: [
         {
-          events: [{ type: "changeMap", map: "Kitchen" }],
+          events: [
+            {
+              type: "changeMap",
+              map: "Kitchen",
+              x: utils.widthGrid(2),
+              y: utils.widthGrid(2),
+              direction: "down",
+            },
+          ],
         },
       ],
     },
   },
   Kitchen: {
+    id: "Kitchen",
     lowerSrc: "/images/maps/KitchenLower.png",
     upperSrc: "/images/maps/KitchenUpper.png",
     gameObjects: {
@@ -232,6 +242,48 @@ window.OverworldMaps = {
           },
         ],
       }),
+    },
+    cutsceneSpaces: {
+      [utils.asGridCoord(5, 10)]: [
+        {
+          events: [
+            {
+              type: "changeMap",
+              map: "Street",
+              x: utils.widthGrid(29),
+              y: utils.widthGrid(9),
+              direction: "down",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  Street: {
+    id: "Street",
+    lowerSrc: "/images/maps/StreetLower.png",
+    upperSrc: "/images/maps/StreetUpper.png",
+    gameObjects: {
+      hero: new Person({
+        isPlayerControlled: true,
+        x: utils.widthGrid(30),
+        y: utils.widthGrid(10),
+      }),
+    },
+    cutsceneSpaces: {
+      [utils.asGridCoord(29, 9)]: [
+        {
+          events: [
+            {
+              type: "changeMap",
+              map: "Kitchen",
+              x: utils.widthGrid(5),
+              y: utils.widthGrid(10),
+              direction: "up",
+            },
+          ],
+        },
+      ],
     },
   },
 };
